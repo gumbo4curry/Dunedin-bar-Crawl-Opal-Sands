@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<!-- saved from url=(0073)file:///C:/Users/concierge/Downloads/Dunedin_Bar_Crawl_Interactive_1.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dunedin Bar Crawl Trail · Opal Sands Resort</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="./index_files/css2" rel="stylesheet">
+<link rel="stylesheet" href="./index_files/leaflet.css">
+<script src="./index_files/leaflet.js.download"></script>
+<style>
+  :root {
+    --navy:   #0D2B45;
+    --navy2:  #122f4d;
+    --gold:   #C9A84C;
+    --gold2:  #e0c06a;
+    --teal:   #2E7D8E;
+    --cream:  #FAF6EF;
+    --rule:   #D9CDB8;
+    --text:   #1a1a1a;
+    --muted:  #666;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Lato', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--navy);
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 40px,
+      rgba(201,168,76,0.04) 40px,
+      rgba(201,168,76,0.04) 80px
+    );
+  }
+  .gold-rule { height: 3px; background: var(--gold); width: 100%; }
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 28px 20px 24px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+  .resort-tag {
+    font-family: 'Lato', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 6vw, 44px);
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  .header-sub {
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    color: var(--rule);
+    letter-spacing: 1px;
+    font-weight: 300;
+  }
+
+  /* ── MAP ── */
+  #map {
+    width: 100%;
+    height: 420px;
+    border-top: none;
+    border-bottom: 3px solid var(--gold);
+    z-index: 1;
+  }
+
+  /* Custom Leaflet popup */
+  .leaflet-popup-content-wrapper {
+    border-radius: 4px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    border-bottom: 3px solid var(--gold);
+  }
+  .leaflet-popup-content { margin: 0; width: 220px !important; }
+  .popup-header {
+    background: var(--navy);
+    padding: 10px 14px 8px;
+  }
+  .popup-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .popup-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    color: #fff;
+    line-height: 1.3;
+    margin-top: 2px;
+  }
+  .popup-body { padding: 10px 14px 12px; background: #fff; }
+  .popup-tag {
+    font-size: 10px;
+    color: var(--teal);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .popup-desc { font-size: 11.5px; color: #444; line-height: 1.5; margin-bottom: 8px; }
+  .popup-must-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .popup-must { font-size: 11px; color: var(--navy); font-style: italic; }
+  .popup-hours { font-size: 10px; color: var(--muted); margin-top: 8px; border-top: 1px solid #eee; padding-top: 6px; }
+
+  /* ── TRAIL INTRO ── */
+  .intro-strip {
+    background: var(--navy2);
+    padding: 16px 20px;
+    text-align: center;
+  }
+  .intro-strip p {
+    max-width: 700px;
+    margin: 0 auto;
+    font-size: 13px;
+    color: var(--rule);
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  /* ── STOPS GRID ── */
+  .stops-section {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 36px 16px 16px;
+  }
+  .section-label {
+    font-family: 'Lato', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+
+  .stops-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+
+  .stop-card {
+    background: #fff;
+    border: 1px solid var(--rule);
+    border-bottom: 3px solid var(--gold);
+    border-radius: 3px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .stop-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(13,43,69,0.12);
+  }
+  .stop-card-header {
+    background: var(--navy);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .stop-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+    min-width: 32px;
+  }
+  .stop-title-block {}
+  .stop-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    color: #fff;
+    line-height: 1.3;
+  }
+  .stop-time {
+    font-size: 10px;
+    color: var(--rule);
+    margin-top: 2px;
+    font-weight: 300;
+  }
+  .stop-body { padding: 12px 14px; }
+  .stop-tag {
+    font-size: 9.5px;
+    color: var(--teal);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 7px;
+  }
+  .stop-desc {
+    font-size: 12px;
+    color: #444;
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+  .must-label {
+    font-size: 8.5px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .must-items {
+    font-size: 11.5px;
+    color: var(--navy);
+    font-style: italic;
+    margin-bottom: 10px;
+  }
+  .stop-hours {
+    font-size: 10px;
+    color: var(--muted);
+    border-top: 1px solid #f0ece4;
+    padding-top: 8px;
+  }
+  .stop-hours .warn { color: #c0392b; font-weight: 700; }
+
+  /* ── TIPS BAR ── */
+  .tips-bar {
+    background: var(--navy);
+    margin-top: 36px;
+  }
+  .tips-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+  }
+  .tip-item {}
+  .tip-icon-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+  .tip-text { font-size: 12px; color: var(--rule); line-height: 1.6; font-weight: 300; }
+
+  /* ── QR SECTION ── */
+  .qr-section {
+    background: var(--cream);
+    border-top: 1px solid var(--rule);
+  }
+  .qr-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 16px;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .qr-box {
+    background: #fff;
+    border: 2px solid var(--gold);
+    padding: 16px;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    min-width: 160px;
+  }
+  #qr-canvas canvas { display: block; }
+  .qr-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--navy);
+    text-transform: uppercase;
+    font-weight: 700;
+    text-align: center;
+  }
+  .qr-info { max-width: 400px; }
+  .qr-info h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+  .qr-info p { font-size: 13px; color: var(--muted); line-height: 1.7; }
+  .qr-url {
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--teal);
+    word-break: break-all;
+    font-family: monospace;
+    background: #eef7f9;
+    padding: 6px 10px;
+    border-radius: 3px;
+    border-left: 3px solid var(--teal);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--navy);
+    padding: 18px 20px;
+    text-align: center;
+  }
+  footer p { font-size: 11px; color: var(--rule); font-weight: 300; line-height: 1.8; }
+  footer strong { color: var(--gold); font-weight: 700; }
+
+  /* ── CUSTOM MARKER ── */
+  .custom-marker {
+    background: var(--navy);
+    border: 2.5px solid var(--gold);
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+  }
+  .marker-num {
+    transform: rotate(45deg);
+    color: var(--gold);
+    font-family: 'Playfair Display', serif;
+    font-size: 12px;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  /* Active stop card */
+  .stop-card.active { box-shadow: 0 0 0 2px var(--gold), 0 10px 30px rgba(13,43,69,0.15); }
+
+  @media (max-width: 600px) {
+    #map { height: 320px; }
+    .stops-grid { grid-template-columns: 1fr; }
+    .qr-inner { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="gold-rule"></div>
+<header>
+  <div class="header-inner">
+    <div class="resort-tag">Opal Sands Resort &nbsp;·&nbsp; Clearwater Beach, FL</div>
+    <h1>Dunedin Bar Crawl Trail</h1>
+    <p class="header-sub">A Curated Evening Experience &nbsp;·&nbsp; 7 Stops &nbsp;·&nbsp; Concierge Recommended</p>
+  </div>
+</header>
+<div class="gold-rule"></div>
+
+<!-- MAP -->
+<div id="map" class="leaflet-container leaflet-touch leaflet-fade-anim leaflet-grab leaflet-touch-drag leaflet-touch-zoom" tabindex="0" style="position: relative;"><div class="leaflet-pane leaflet-map-pane" style="transform: translate3d(482px, 0px, 0px);"><div class="leaflet-pane leaflet-tile-pane"><div class="leaflet-layer " style="z-index: 1; opacity: 1;"><div class="leaflet-tile-container leaflet-zoom-animated" style="z-index: 19; transform: translate3d(0px, 0px, 0px) scale(1);"><img alt="" src="./index_files/13726.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(418px, 117px, 0px); opacity: 1;"><img alt="" src="./index_files/13725.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(418px, -139px, 0px); opacity: 1;"><img alt="" src="./index_files/13726(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(162px, 117px, 0px); opacity: 1;"><img alt="" src="./index_files/13726(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(674px, 117px, 0px); opacity: 1;"><img alt="" src="./index_files/13727.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(418px, 373px, 0px); opacity: 1;"><img alt="" src="./index_files/13725(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(162px, -139px, 0px); opacity: 1;"><img alt="" src="./index_files/13725(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(674px, -139px, 0px); opacity: 1;"><img alt="" src="./index_files/13727(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(162px, 373px, 0px); opacity: 1;"><img alt="" src="./index_files/13727(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(674px, 373px, 0px); opacity: 1;"><img alt="" src="./index_files/13726(3).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-94px, 117px, 0px); opacity: 1;"><img alt="" src="./index_files/13726(4).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(930px, 117px, 0px); opacity: 1;"><img alt="" src="./index_files/13725(3).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-94px, -139px, 0px); opacity: 1;"><img alt="" src="./index_files/13725(4).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(930px, -139px, 0px); opacity: 1;"><img alt="" src="./index_files/13727(3).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-94px, 373px, 0px); opacity: 1;"><img alt="" src="./index_files/13727(4).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(930px, 373px, 0px); opacity: 1;"><img alt="" src="./index_files/13726(5).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-350px, 117px, 0px); opacity: 1;"><img alt="" src="./index_files/13725(5).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-350px, -139px, 0px); opacity: 1;"><img alt="" src="./index_files/13727(5).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-350px, 373px, 0px); opacity: 1;"><img alt="" src="./index_files/13726(6).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-606px, 117px, 0px); opacity: 1;"><img alt="" src="./index_files/13726(7).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1186px, 117px, 0px); opacity: 1;"><img alt="" src="./index_files/13725(6).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-606px, -139px, 0px); opacity: 1;"><img alt="" src="./index_files/13725(7).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1186px, -139px, 0px); opacity: 1;"><img alt="" src="./index_files/13727(6).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-606px, 373px, 0px); opacity: 1;"><img alt="" src="./index_files/13727(7).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1186px, 373px, 0px); opacity: 1;"></div></div></div><div class="leaflet-pane leaflet-overlay-pane"><svg pointer-events="none" class="leaflet-zoom-animated" width="2286" height="500" viewBox="-672 -42 2286 500" style="transform: translate3d(-672px, -42px, 0px);"><g><path class="leaflet-interactive" stroke="#C9A84C" stroke-opacity="0.7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 6" fill="none" d="M412 131L499 111L510 119L511 94L499 113L529 104L455 323"></path></g></svg></div><div class="leaflet-pane leaflet-shadow-pane"></div><div class="leaflet-pane leaflet-marker-pane"><div class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -16px; margin-top: -32px; width: 32px; height: 32px; transform: translate3d(412px, 131px, 0px); z-index: 131;"><div class="custom-marker"><span class="marker-num">01</span></div></div><div class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -16px; margin-top: -32px; width: 32px; height: 32px; transform: translate3d(499px, 111px, 0px); z-index: 111;"><div class="custom-marker"><span class="marker-num">02</span></div></div><div class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -16px; margin-top: -32px; width: 32px; height: 32px; transform: translate3d(510px, 119px, 0px); z-index: 119;"><div class="custom-marker"><span class="marker-num">03</span></div></div><div class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -16px; margin-top: -32px; width: 32px; height: 32px; transform: translate3d(511px, 94px, 0px); z-index: 94;"><div class="custom-marker"><span class="marker-num">04</span></div></div><div class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -16px; margin-top: -32px; width: 32px; height: 32px; transform: translate3d(499px, 113px, 0px); z-index: 113;"><div class="custom-marker"><span class="marker-num">05</span></div></div><div class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -16px; margin-top: -32px; width: 32px; height: 32px; transform: translate3d(529px, 104px, 0px); z-index: 104;"><div class="custom-marker"><span class="marker-num">06</span></div></div><div class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -16px; margin-top: -32px; width: 32px; height: 32px; transform: translate3d(455px, 323px, 0px); z-index: 323;"><div class="custom-marker"><span class="marker-num">07</span></div></div></div><div class="leaflet-pane leaflet-tooltip-pane"></div><div class="leaflet-pane leaflet-popup-pane"></div><div class="leaflet-proxy leaflet-zoom-animated" style="transform: translate3d(2.26514e+06px, 3.51395e+06px, 0px) scale(16384);"></div></div><div class="leaflet-control-container"><div class="leaflet-top leaflet-left"><div class="leaflet-control-zoom leaflet-bar leaflet-control"><a class="leaflet-control-zoom-in" href="file:///C:/Users/concierge/Downloads/Dunedin_Bar_Crawl_Interactive_1.html#" title="Zoom in" role="button" aria-label="Zoom in" aria-disabled="false"><span aria-hidden="true">+</span></a><a class="leaflet-control-zoom-out" href="file:///C:/Users/concierge/Downloads/Dunedin_Bar_Crawl_Interactive_1.html#" title="Zoom out" role="button" aria-label="Zoom out" aria-disabled="false"><span aria-hidden="true">−</span></a></div></div><div class="leaflet-top leaflet-right"></div><div class="leaflet-bottom leaflet-left"></div><div class="leaflet-bottom leaflet-right"><div class="leaflet-control-attribution leaflet-control"><a href="https://leafletjs.com/" title="A JavaScript library for interactive maps"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8" class="leaflet-attribution-flag"><path fill="#4C7BE1" d="M0 0h12v4H0z"></path><path fill="#FFD500" d="M0 4h12v3H0z"></path><path fill="#E0BC00" d="M0 7h12v1H0z"></path></svg> Leaflet</a> <span aria-hidden="true">|</span> © OpenStreetMap, © CARTO</div></div></div></div>
+
+<!-- INTRO -->
+<div class="intro-strip">
+  <p>Dunedin is one of Florida's most walkable and celebrated craft destinations — a charming Scottish-founded coastal town packed with award-winning breweries, vibrant cocktail bars, and Gulf sunset views. This hand-picked trail covers 7 stops in a logical walking loop. Pace yourself, stay hydrated, and enjoy every moment.</p>
+</div>
+
+<!-- STOPS -->
+<div class="stops-section">
+  <div class="section-label">The Trail</div>
+  <div class="stops-grid" id="stops-grid"><div class="stop-card" id="card-0">
+    <div class="stop-card-header">
+      <div class="stop-num">01</div>
+      <div class="stop-title-block">
+        <div class="stop-name">Bon Appétit Marina Bar</div>
+        <div class="stop-time">Start: 4:00 PM · ~45 min</div>
+      </div>
+    </div>
+    <div class="stop-body">
+      <div class="stop-tag">Upscale Waterfront · Live Piano Weekends</div>
+      <div class="stop-desc">Kick off the evening at the iconic Dunedin Marina waterfront. Stunning Gulf views, an elegant atmosphere, and weekend live piano — a refined way to set the tone for the night. Great spot for a pre-crawl bite.</div>
+      <div class="must-label">Must Try</div>
+      <div class="must-items">Blackened grouper · Craft cocktails · Smoked fish starter</div>
+      <div class="stop-hours">Open until 10 PM daily</div>
+    </div>
+  </div><div class="stop-card" id="card-1">
+    <div class="stop-card-header">
+      <div class="stop-num">02</div>
+      <div class="stop-title-block">
+        <div class="stop-name">Dunedin House of Beer</div>
+        <div class="stop-time">4:50 PM · ~40 min</div>
+      </div>
+    </div>
+    <div class="stop-body">
+      <div class="stop-tag">Dive Taphouse · Massive Draft List · Dog Friendly</div>
+      <div class="stop-desc">A legendary Broadway taphouse with one of the most impressive rotating draft lists in Pinellas County. Casual, game-filled, and famously welcoming. Sister venue to HOB Brewing directly across the street.</div>
+      <div class="must-label">Must Try</div>
+      <div class="must-items">Rotating guest taps · HOB house drafts · Canned selections</div>
+      <div class="stop-hours">Open until 3 AM daily</div>
+    </div>
+  </div><div class="stop-card" id="card-2">
+    <div class="stop-card-header">
+      <div class="stop-num">03</div>
+      <div class="stop-title-block">
+        <div class="stop-name">HOB Brewing Co.</div>
+        <div class="stop-time">5:35 PM · ~40 min</div>
+      </div>
+    </div>
+    <div class="stop-body">
+      <div class="stop-tag">German Beer Hall · Food Trucks · Family &amp; Dog Friendly</div>
+      <div class="stop-desc">Step across the street for HOB's expansive covered outdoor patio with a German biergarten feel. Three pour sizes let you sample multiple beers. Regularly hosts rotating food trucks.</div>
+      <div class="must-label">Must Try</div>
+      <div class="must-items">Peanut Butter Blonde · Rotating sours · Splashin' Around IPA</div>
+      <div class="stop-hours">Open until Midnight (Fri/Sat)</div>
+    </div>
+  </div><div class="stop-card" id="card-3">
+    <div class="stop-card-header">
+      <div class="stop-num">04</div>
+      <div class="stop-title-block">
+        <div class="stop-name">Cueni Brewing Co.</div>
+        <div class="stop-time">6:20 PM · ~35 min</div>
+      </div>
+    </div>
+    <div class="stop-body">
+      <div class="stop-tag">Hidden Gem · Experimental Brews · 4.8★ Rated</div>
+      <div class="stop-desc">One of Dunedin's best-kept secrets and highest-rated breweries in all of Pinellas County. Known for inventive small-batch creations and an incredibly warm community atmosphere.</div>
+      <div class="must-label">Must Try</div>
+      <div class="must-items">Pickle Beer · Rotating experimental batches · Seasonal specialties</div>
+      <div class="stop-hours">Open until 11 PM (Fri/Sat)</div>
+    </div>
+  </div><div class="stop-card" id="card-4">
+    <div class="stop-card-header">
+      <div class="stop-num">05</div>
+      <div class="stop-title-block">
+        <div class="stop-name">Señor Rita's Tequilería</div>
+        <div class="stop-time">7:00 PM · ~45 min</div>
+      </div>
+    </div>
+    <div class="stop-body">
+      <div class="stop-tag">Tequila Bar · Hand-Crafted Margaritas · Late Night</div>
+      <div class="stop-desc">Time to shift gears — Señor Rita's brings vibrant energy, swing seats, colorful photo walls, and the best margaritas in Dunedin. Staff hand-craft all fruit syrups fresh daily.</div>
+      <div class="must-label">Must Try</div>
+      <div class="must-items">House frozen margaritas · Fresh-syrup specialty cocktails · Late-night tacos</div>
+      <div class="stop-hours"><span class="warn">⚠ Closed Wednesdays &nbsp;·&nbsp;</span>Open until 1 AM (Fri/Sat) · ⚠ CLOSED WEDNESDAYS</div>
+    </div>
+  </div><div class="stop-card" id="card-5">
+    <div class="stop-card-header">
+      <div class="stop-num">06</div>
+      <div class="stop-title-block">
+        <div class="stop-name">Sonder Social Club</div>
+        <div class="stop-time">7:50 PM · ~45 min</div>
+      </div>
+    </div>
+    <div class="stop-body">
+      <div class="stop-tag">Seasonal Cocktail Bar · Rotating Themes · Upscale Casual</div>
+      <div class="stop-desc">One of Dunedin's most stylish cocktail bars. Sonder rotates its entire theme, décor, and cocktail menu seasonally — so every visit feels completely fresh. Beautifully curated drinks and impressive happy hour.</div>
+      <div class="must-label">Must Try</div>
+      <div class="must-items">Seasonal signature cocktails · Ahi tuna poke · Craft Old Fashioned</div>
+      <div class="stop-hours">Open until Midnight (Fri/Sat 2 AM)</div>
+    </div>
+  </div><div class="stop-card" id="card-6">
+    <div class="stop-card-header">
+      <div class="stop-num">07</div>
+      <div class="stop-title-block">
+        <div class="stop-name">Hi-Fi Rooftop Bar</div>
+        <div class="stop-time">8:45 PM · ~60 min</div>
+      </div>
+    </div>
+    <div class="stop-body">
+      <div class="stop-tag">Grand Finale · Gulf Sunset Views · Craft Cocktails</div>
+      <div class="stop-desc">End the night in style atop the Fenway Hotel. Hi-Fi's rooftop delivers panoramic Gulf views, a signature nightly sunset tradition, and elevated craft cocktails — the perfect wind-down after a full evening.</div>
+      <div class="must-label">Must Try</div>
+      <div class="must-items">Craft cocktails · Small bites · Ask about the sunset tradition</div>
+      <div class="stop-hours">Open until 11 PM (Fri/Sat)</div>
+    </div>
+  </div></div>
+</div>
+
+<!-- TIPS -->
+<div class="tips-bar">
+  <div class="gold-rule"></div>
+  <div class="tips-inner">
+    <div class="tip-item">
+      <div class="tip-icon-label">🚗 &nbsp;Getting There</div>
+      <p class="tip-text">~20 min drive from Clearwater Beach via Alt 19 N. Free parking near the marina and on side streets off Broadway.</p>
+    </div>
+    <div class="tip-item">
+      <div class="tip-icon-label">📱 &nbsp;Rideshare</div>
+      <p class="tip-text">Uber &amp; Lyft are active in Dunedin. Book your return ride from Hi-Fi Rooftop — do not drive after the crawl.</p>
+    </div>
+    <div class="tip-item">
+      <div class="tip-icon-label">🐾 &nbsp;Dog Friendly</div>
+      <p class="tip-text">HOB Brewing, Cueni, and DHOB all welcome well-behaved dogs — a great trail for guests traveling with pets.</p>
+    </div>
+    <div class="tip-item">
+      <div class="tip-icon-label">🏴󠁧󠁢󠁳󠁣󠁴󠁿 &nbsp;Fun Fact</div>
+      <p class="tip-text">Dunedin was founded by Scottish settlers in the 1870s and named after Edinburgh's Gaelic name. Highland Games held here every spring!</p>
+    </div>
+  </div>
+  <div class="gold-rule"></div>
+</div>
+
+<!-- QR SECTION -->
+<div class="qr-section">
+  <div class="qr-inner">
+    <div class="qr-box">
+      <div id="qr-canvas" title="file:///C:/Users/concierge/Downloads/Dunedin_Bar_Crawl_Interactive_1.html"><canvas width="130" height="130" style="display: none;"></canvas><img src="data:image/png;base64,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" style="display: block;"></div>
+      <div class="qr-label">Scan to Share</div>
+    </div>
+    <div class="qr-info">
+      <h3>Share This Guide</h3>
+      <p>Scan the QR code to open this interactive trail on any smartphone — perfect for passing directly to guests at check-in or printing on your concierge desk card.</p>
+      <div class="qr-url" id="page-url">file:///C:/Users/concierge/Downloads/Dunedin_Bar_Crawl_Interactive_1.html</div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p><strong>Curated by Your Concierge Team &nbsp;·&nbsp; Opal Sands Resort</strong><br>
+  Clearwater Beach, Florida &nbsp;·&nbsp; For assistance, visit the Concierge Desk or call the front desk.</p>
+</footer>
+
+<!-- QR CODE LIBRARY (inline, no CDN needed) -->
+<script src="./index_files/qrcode.min.js.download"></script>
+
+<script>
+// ── STOP DATA ────────────────────────────────────────────────────────────────
+const stops = [
+  {
+    num: "01", name: "Bon Appétit Marina Bar",
+    tag: "Upscale Waterfront · Live Piano Weekends",
+    time: "Start: 4:00 PM · ~45 min",
+    hours: "Open until 10 PM daily",
+    desc: "Kick off the evening at the iconic Dunedin Marina waterfront. Stunning Gulf views, an elegant atmosphere, and weekend live piano — a refined way to set the tone for the night. Great spot for a pre-crawl bite.",
+    must: "Blackened grouper · Craft cocktails · Smoked fish starter",
+    lat: 28.013257, lng: -82.793209
+  },
+  {
+    num: "02", name: "Dunedin House of Beer",
+    tag: "Dive Taphouse · Massive Draft List · Dog Friendly",
+    time: "4:50 PM · ~40 min",
+    hours: "Open until 3 AM daily",
+    desc: "A legendary Broadway taphouse with one of the most impressive rotating draft lists in Pinellas County. Casual, game-filled, and famously welcoming. Sister venue to HOB Brewing directly across the street.",
+    must: "Rotating guest taps · HOB house drafts · Canned selections",
+    lat: 28.014042, lng: -82.789505
+  },
+  {
+    num: "03", name: "HOB Brewing Co.",
+    tag: "German Beer Hall · Food Trucks · Family & Dog Friendly",
+    time: "5:35 PM · ~40 min",
+    hours: "Open until Midnight (Fri/Sat)",
+    desc: "Step across the street for HOB's expansive covered outdoor patio with a German biergarten feel. Three pour sizes let you sample multiple beers. Regularly hosts rotating food trucks.",
+    must: "Peanut Butter Blonde · Rotating sours · Splashin' Around IPA",
+    lat: 28.013741, lng: -82.789019
+  },
+  {
+    num: "04", name: "Cueni Brewing Co.",
+    tag: "Hidden Gem · Experimental Brews · 4.8★ Rated",
+    time: "6:20 PM · ~35 min",
+    hours: "Open until 11 PM (Fri/Sat)",
+    desc: "One of Dunedin's best-kept secrets and highest-rated breweries in all of Pinellas County. Known for inventive small-batch creations and an incredibly warm community atmosphere.",
+    must: "Pickle Beer · Rotating experimental batches · Seasonal specialties",
+    lat: 28.014677, lng: -82.788966
+  },
+  {
+    num: "05", name: "Señor Rita's Tequilería",
+    tag: "Tequila Bar · Hand-Crafted Margaritas · Late Night",
+    time: "7:00 PM · ~45 min",
+    hours: "Open until 1 AM (Fri/Sat) · ⚠ CLOSED WEDNESDAYS",
+    desc: "Time to shift gears — Señor Rita's brings vibrant energy, swing seats, colorful photo walls, and the best margaritas in Dunedin. Staff hand-craft all fruit syrups fresh daily.",
+    must: "House frozen margaritas · Fresh-syrup specialty cocktails · Late-night tacos",
+    lat: 28.013936, lng: -82.789512,
+    warn: true
+  },
+  {
+    num: "06", name: "Sonder Social Club",
+    tag: "Seasonal Cocktail Bar · Rotating Themes · Upscale Casual",
+    time: "7:50 PM · ~45 min",
+    hours: "Open until Midnight (Fri/Sat 2 AM)",
+    desc: "One of Dunedin's most stylish cocktail bars. Sonder rotates its entire theme, décor, and cocktail menu seasonally — so every visit feels completely fresh. Beautifully curated drinks and impressive happy hour.",
+    must: "Seasonal signature cocktails · Ahi tuna poke · Craft Old Fashioned",
+    lat: 28.014283, lng: -82.788205
+  },
+  {
+    num: "07", name: "Hi-Fi Rooftop Bar",
+    tag: "Grand Finale · Gulf Sunset Views · Craft Cocktails",
+    time: "8:45 PM · ~60 min",
+    hours: "Open until 11 PM (Fri/Sat)",
+    desc: "End the night in style atop the Fenway Hotel. Hi-Fi's rooftop delivers panoramic Gulf views, a signature nightly sunset tradition, and elevated craft cocktails — the perfect wind-down after a full evening.",
+    must: "Craft cocktails · Small bites · Ask about the sunset tradition",
+    lat: 28.005986, lng: -82.791369
+  }
+];
+
+// ── MAP INIT ─────────────────────────────────────────────────────────────────
+const map = L.map('map', { zoomControl: true, scrollWheelZoom: false });
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '© OpenStreetMap, © CARTO',
+  subdomains: 'abcd', maxZoom: 19
+}).addTo(map);
+
+const markers = [];
+const bounds = [];
+
+stops.forEach((stop, i) => {
+  const icon = L.divIcon({
+    className: '',
+    html: `<div class="custom-marker"><span class="marker-num">${stop.num}</span></div>`,
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -36]
+  });
+
+  const warnHtml = stop.warn ? `<span class="warn">⚠ Closed Wednesdays</span> · ` : '';
+  const popup = L.popup({ maxWidth: 240, className: '' }).setContent(`
+    <div class="popup-header">
+      <div class="popup-num">Stop ${stop.num}</div>
+      <div class="popup-name">${stop.name}</div>
+    </div>
+    <div class="popup-body">
+      <div class="popup-tag">${stop.tag}</div>
+      <div class="popup-desc">${stop.desc}</div>
+      <div class="popup-must-label">Must Try</div>
+      <div class="popup-must">${stop.must}</div>
+      <div class="popup-hours">${warnHtml}${stop.hours}</div>
+    </div>
+  `);
+
+  const marker = L.marker([stop.lat, stop.lng], { icon }).addTo(map).bindPopup(popup);
+  markers.push(marker);
+  bounds.push([stop.lat, stop.lng]);
+
+  marker.on('click', () => {
+    document.querySelectorAll('.stop-card').forEach(c => c.classList.remove('active'));
+    const card = document.getElementById(`card-${i}`);
+    if (card) {
+      card.classList.add('active');
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+});
+
+// Draw route polyline
+const routeCoords = stops.map(s => [s.lat, s.lng]);
+L.polyline(routeCoords, { color: '#C9A84C', weight: 2.5, opacity: 0.7, dashArray: '6 6' }).addTo(map);
+map.fitBounds(bounds, { padding: [30, 30] });
+
+// ── STOP CARDS ───────────────────────────────────────────────────────────────
+const grid = document.getElementById('stops-grid');
+stops.forEach((stop, i) => {
+  const card = document.createElement('div');
+  card.className = 'stop-card';
+  card.id = `card-${i}`;
+  const warnHtml = stop.warn ? `<span class="warn">⚠ Closed Wednesdays &nbsp;·&nbsp;</span>` : '';
+  card.innerHTML = `
+    <div class="stop-card-header">
+      <div class="stop-num">${stop.num}</div>
+      <div class="stop-title-block">
+        <div class="stop-name">${stop.name}</div>
+        <div class="stop-time">${stop.time}</div>
+      </div>
+    </div>
+    <div class="stop-body">
+      <div class="stop-tag">${stop.tag}</div>
+      <div class="stop-desc">${stop.desc}</div>
+      <div class="must-label">Must Try</div>
+      <div class="must-items">${stop.must}</div>
+      <div class="stop-hours">${warnHtml}${stop.hours}</div>
+    </div>
+  `;
+  card.addEventListener('click', () => {
+    map.setView([stop.lat, stop.lng], 16, { animate: true });
+    markers[i].openPopup();
+    document.querySelectorAll('.stop-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  grid.appendChild(card);
+});
+
+// ── QR CODE ──────────────────────────────────────────────────────────────────
+const pageUrl = window.location.href;
+document.getElementById('page-url').textContent = pageUrl;
+
+if (typeof QRCode !== 'undefined') {
+  new QRCode(document.getElementById('qr-canvas'), {
+    text: pageUrl,
+    width: 130, height: 130,
+    colorDark: '#0D2B45',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+} else {
+  document.getElementById('qr-canvas').innerHTML =
+    '<p style="font-size:11px;color:#999;text-align:center;padding:10px;">QR code loads<br>when hosted online</p>';
+}
+</script>
+
+
+</body></html>
